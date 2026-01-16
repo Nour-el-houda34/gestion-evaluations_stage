@@ -1,0 +1,94 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+function LoginForm() {
+  const [email, setEmail] = useState("");
+  const [motDePasse, setMotDePasse] = useState("");
+  const [message, setMessage] = useState("");
+
+  const navigate = useNavigate();  // Hook de navigation
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("http://localhost:8081/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email, password: motDePasse }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        setMessage(data.error);
+      } else if (data.message) {
+        setMessage(data.message);
+
+        // Si connexion réussie, redirection vers /Dashboard
+        if (data.message.toLowerCase().includes("réussie")) {
+          setTimeout(() => {
+            navigate("/Dashboard");
+          }, 1000); // délai de 1s pour voir le message avant redirection
+        }
+      } else {
+        setMessage("Réponse inattendue");
+      }
+    } catch (error) {
+      setMessage("Erreur réseau ou serveur indisponible");
+      console.error("Erreur login:", error);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        maxWidth: 350,
+        margin: "60px auto",
+        padding: "32px",
+        borderRadius: "12px",
+        boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
+        background: "#fff",
+        fontFamily: "Segoe UI, sans-serif",
+      }}
+    >
+      <h2 style={{ textAlign: "center", marginBottom: 24, color: "#1976d2" }}>
+        Connexion
+      </h2>
+      <form onSubmit={handleSubmit}>
+        {/* ...inputs... */}
+        <button
+          type="submit"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "6px",
+            border: "none",
+            background: "#1976d2",
+            color: "#fff",
+            fontWeight: 600,
+            fontSize: 16,
+            cursor: "pointer",
+            transition: "background 0.2s",
+          }}
+        >
+          Se connecter
+        </button>
+      </form>
+      {message && (
+        <p
+          style={{
+            marginTop: 18,
+            color: message.toLowerCase().includes("réussie") ? "green" : "#d32f2f",
+            textAlign: "center",
+            fontWeight: 500,
+          }}
+        >
+          {message}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default LoginForm;

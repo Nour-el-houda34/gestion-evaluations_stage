@@ -1,0 +1,247 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+import PropTypes from "prop-types";
+
+// Données par défaut
+const DEFAULT_PIE_DATA = [
+  { name: "Excellent", value: 20 },
+  { name: "Très bien", value: 25 },
+  { name: "Bien", value: 30 },
+  { name: "À améliorer", value: 15 },
+  { name: "Insuffisant", value: 10 },
+];
+
+const DEFAULT_BAR_DATA = [
+  { competence: "Technique", moyenne: 4.1 },
+  { competence: "Communication", moyenne: 3.5 },
+  { competence: "Autonomie", moyenne: 3.8 },
+  { competence: "Esprit d'équipe", moyenne: 4.0 },
+];
+
+const STAGES_EN_ATTENTE = [
+  { name: "Alice Dupont", end: "03/05/2025", status: "À évaluer" },
+  { name: "Mehdi Lahlou", end: "07/05/2025", status: "En cours" },
+  { name: "Sarah Bensaid", end: "09/05/2025", status: "Non commencé" },
+];
+
+const KPI = [
+  { title: "Stages évalués", value: 58 },
+  { title: "Stages en cours", value: 12 },
+  { title: "Note moyenne", value: "3.7 / 5" },
+  { title: "Tuteurs actifs", value: 15 },
+];
+
+// KPI Item
+const KPIItem = ({ title, value }) => (
+  <div className="bg-white p-6 rounded-xl shadow-lg text-center transition-transform transform hover:scale-105 hover:shadow-xl duration-300">
+    <h2 className="text-2xl font-semibold text-gray-800">{value}</h2>
+    <p className="text-gray-500 mt-2">{title}</p>
+  </div>
+);
+KPIItem.propTypes = {
+  title: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+};
+
+// Pie Chart Component
+const PieChartComponent = ({ data }) => {
+  const COLORS = ["#4CAF50", "#2196F3", "#FFC107", "#FF5722", "#E91E63"];
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          outerRadius={100}
+          dataKey="value"
+          labelLine={false}
+          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Legend verticalAlign="top" height={36} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+};
+PieChartComponent.propTypes = {
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      value: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+};
+
+// Bar Chart Component
+const BarChartComponent = ({ data }) => (
+  <ResponsiveContainer width="100%" height={300}>
+    <BarChart data={data}>
+      <XAxis dataKey="competence" />
+      <YAxis domain={[0, 5]} />
+      <Tooltip />
+      <Bar dataKey="moyenne" fill="#8884d8" radius={[10, 10, 0, 0]} />
+    </BarChart>
+  </ResponsiveContainer>
+);
+BarChartComponent.propTypes = {
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      competence: PropTypes.string.isRequired,
+      moyenne: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+};
+
+// Table Row
+const TableRow = ({ stagiaire }) => (
+  <tr className="border-b hover:bg-gray-50 transition-colors duration-300">
+    <td className="px-4 py-3">{stagiaire.name}</td>
+    <td className="px-4 py-3">{stagiaire.end}</td>
+    <td className="px-4 py-3">{stagiaire.status}</td>
+  </tr>
+);
+TableRow.propTypes = {
+  stagiaire: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    end: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+  }).isRequired,
+};
+
+// Dashboard principal
+const Dashboard = () => {
+  const [statistiques, setStatistiques] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8081/api/statistiques")
+      .then((response) => {
+        const data = response.data;
+
+        // Générer un pieData par critère
+        const pieCharts = Object.entries(data).map(([critere, appreciations]) => ({
+          titre: critere,
+          data: Object.entries(appreciations).map(([label, value]) => ({
+            name: label,
+            value: value,
+          })),
+        }));
+
+        setStatistiques(pieCharts);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 p-6 space-y-10">
+      <section className="relative flex flex-col items-center justify-center p-8 bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 rounded-3xl shadow-xl text-white overflow-hidden">
+        <div className="relative z-10 text-center space-y-6">
+          <h1 className="text-4xl font-extrabold tracking-wide">✨ Bienvenue dans votre Espace d'Évaluation ✨</h1>
+          <p className="text-base leading-relaxed max-w-lg mx-auto">
+            Découvrez une expérience fluide et intuitive pour évaluer vos stagiaires. Cliquez sur le bouton ci-dessous pour commencer votre évaluation !
+          </p>
+          <Link
+            to="/formulaire"
+            className="px-8 py-3 bg-white text-indigo-600 font-bold rounded-full shadow-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-110"
+          >
+            🚀 Commencez l'Évaluation
+          </Link>
+        </div>
+      </section>
+  
+      {/* KPIs */}
+      <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {KPI.map((item, index) => (
+          <KPIItem key={index} title={item.title} value={item.value} />
+        ))}
+      </section>
+  
+      
+        <section className="bg-white p-6 rounded-3xl shadow-lg">
+          <h3 className="text-xl font-bold mb-4 text-indigo-700">Répartition et Compétences</h3>
+          {loading ? (
+            <p className="text-gray-500">Chargement...</p>
+          ) : error ? (
+            <p className="text-red-500">Erreur : {error}</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={DEFAULT_BAR_DATA}>
+            <XAxis dataKey="competence" />
+            <YAxis domain={[0, 5]} />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="moyenne" fill="#8884d8" radius={[10, 10, 0, 0]} />
+            {statistiques.length > 0
+              ? statistiques.map((chart, index) => (
+              <Bar
+                key={index}
+                dataKey="value"
+                data={chart.data}
+                fill="#82ca9d"
+                radius={[10, 10, 0, 0]}
+              />
+            ))
+              : DEFAULT_PIE_DATA.map((entry, index) => (
+              <Bar
+                key={index}
+                dataKey="value"
+                data={[entry]}
+                fill="#82ca9d"
+                radius={[10, 10, 0, 0]}
+              />
+            ))}
+          </BarChart>
+            </ResponsiveContainer>
+          )}
+        </section>
+      <section className="bg-white p-6 rounded-3xl shadow-lg">
+        <h3 className="text-xl font-bold mb-4 text-indigo-700">Stages en Attente</h3>
+        <table className="w-full table-auto border-collapse">
+          <thead>
+            <tr className="bg-indigo-100 text-indigo-800">
+              <th className="px-4 py-2 text-left border">Stagiaire</th>
+              <th className="px-4 py-2 text-left border">Fin</th>
+              <th className="px-4 py-2 text-left border">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {STAGES_EN_ATTENTE.map((stagiaire, index) => (
+              <TableRow key={index} stagiaire={stagiaire} />
+            ))}
+          </tbody>
+        </table>
+      </section>
+  
+      {/* Footer */}
+      <footer className="text-center text-gray-600 mt-8 text-sm">
+        © {new Date().getFullYear()} Master ISI. Tous droits réservés.
+      </footer>
+    </div>
+  );
+  
+};
+
+export default Dashboard;

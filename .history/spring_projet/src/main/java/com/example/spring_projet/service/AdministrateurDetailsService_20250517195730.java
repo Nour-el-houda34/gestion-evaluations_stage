@@ -1,0 +1,35 @@
+/* package com.example.spring_projet.service;
+
+import com.example.spring_projet.models.Administrateur;
+import org.springframework.security.core.userdetails.UserDetailsService;
+
+import com.example.spring_projet.repository.AdministrateurRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+
+@Service
+public class AdministrateurDetailsService implements UserDetailsService {
+
+    private final AdministrateurRepository administrateurRepository;
+
+    public AdministrateurDetailsService(AdministrateurRepository administrateurRepository) {
+        this.administrateurRepository = administrateurRepository;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Administrateur admin = administrateurRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Administrateur non trouvé"));
+        
+        // Ici on crée un UserDetails à partir de l'administrateur
+        return new org.springframework.security.core.userdetails.User(
+                admin.getEmail(),
+                admin.getPassword(),
+                Collections.emptyList() // ou ajouter des rôles/authorities si besoin
+        );
+    }
+}
+ */

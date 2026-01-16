@@ -1,0 +1,82 @@
+package com.example.spring_projet.models;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+
+@Entity
+public class Competence {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String intitule;
+    private Integer note;
+
+
+    @ManyToOne
+    private Appreciation appreciations;
+
+     @OneToMany(mappedBy = "competence", cascade = CascadeType.ALL)
+    private List<Categorie> categories = new ArrayList<>();
+    
+
+    public Competence() {
+    }
+
+    public Competence(String intitule, Integer note, Categorie categorie) {
+        this.intitule = intitule;
+        this.note = note;
+        this.categorie = categorie;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getIntitule() {
+        return intitule;
+    }
+
+    public void setIntitule(String intitule) {
+        this.intitule = intitule;
+    }
+
+    public Integer getNote() {
+        return note;
+    }
+
+    public void setNote(Integer note) {
+        this.note = note;
+    }
+
+    public Categorie getCategorie() {
+        return categorie;
+    }
+
+    public void setCategorie(Categorie categorie) {
+        this.categorie = categorie;
+    }
+
+    public Appreciation getAppreciations() {
+        return appreciations;
+    }
+
+    public void setAppreciations(Appreciation appreciations) {
+        this.appreciations = appreciations;
+    }
+
+    
+}
